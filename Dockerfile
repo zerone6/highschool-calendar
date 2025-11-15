@@ -15,7 +15,7 @@ COPY . .
 # Prepare data
 RUN npm run prepare:data && \
     mkdir -p public && \
-    rm -f public/data && \
+    rm -rf public/data && \
     ln -sf ../Data public/data
 
 # Build the application
