@@ -1,0 +1,16 @@
+{
+  "expo": {
+    "name": "東京私立学校 入試日程",
+    "slug": "tokyo-private-highschool-schedule",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "platforms": ["ios", "android"],
+    "sdkVersion": "54.0.0",
+    "updates": { "fallbackToCacheTimeout": 0 },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.example.tokyoPrivateHighSchoolSchedule"
+    }
+  }
+}
