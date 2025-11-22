@@ -1,11 +1,8 @@
 import Papa from 'papaparse';
 import { SchoolRecord, DateGroupedRecords } from '../types';
 import { sortExamDates } from './date';
-import * as XLSX from 'xlsx';
 
-// 엑셀 기본 경로 및 시트명
-const DEFAULT_XLSX_PATH = '/highschool/data/tokyo_2025.xlsx';
-const DEFAULT_XLSX_SHEET = 'Sheet1';
+// 기본 데이터 경로 (JSON 우선 사용)
 const DEFAULT_JSON_PATH = '/highschool/data/tokyo_2025.json';
 
 export async function loadCsv(path: string = DEFAULT_JSON_PATH): Promise<SchoolRecord[]> {
@@ -36,56 +33,14 @@ export async function loadCsv(path: string = DEFAULT_JSON_PATH): Promise<SchoolR
     }
   }
   if (path.endsWith('.xlsx')) {
-    try {
-      const res = await fetch(path);
-      if (!res.ok) throw new Error(`XLSX fetch failed: ${res.status}`);
-      const ab = await res.arrayBuffer();
-      const wb = XLSX.read(ab, { type: 'array' });
-      const sheet = wb.Sheets[DEFAULT_XLSX_SHEET] || wb.Sheets[wb.SheetNames[0]];
-      if (!sheet) throw new Error('Sheet not found');
-      const rows: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, blankrows: false });
-      if (!rows.length) throw new Error('No rows read');
-      const dataRows = rows.slice(1);
-      const mapped: SchoolRecord[] = dataRows.map(cols => mapXlsxRow(cols)).filter(r => r.examDate);
-      fillMissingAreas(mapped);
-      return mapped.map(cleanRecord);
-    } catch (e) {
-      console.error('[loadCsv] XLSX 로드 실패:', e);
-      throw e;
-    }
+    // XLSX 직접 로딩은 보안상 제거됨
+    // 대신 빌드 시 JSON으로 변환된 파일을 사용하세요: npm run prepare:data
+    throw new Error('XLSX direct loading is disabled for security. Please use JSON format instead.');
   }
   // 기존 로직 fallback
   return legacyLoad(path);
 }
 
-function excelSerialToDate(serial: any): string {
-  if (typeof serial !== 'number') return String(serial || '').trim();
-  const epoch = Date.UTC(1899, 11, 30);
-  const ms = epoch + serial * 86400000;
-  const date = new Date(ms);
-  const m = String(date.getUTCMonth() + 1).padStart(2, '0');
-  const d = String(date.getUTCDate()).padStart(2, '0');
-  return `${m}/${d}`;
-}
-
-function mapXlsxRow(cols: any[]): SchoolRecord {
-  const [schoolName, area, deviation, examName, applyStart, applyEnd, examDate, resultDate, annual, refund] = cols as (string | number | undefined)[];
-  return {
-    schoolName: toStr(schoolName),
-    area: toStr(area),
-    deviation: deviation != null ? (typeof deviation === 'number' ? deviation : parseInt(String(deviation),10) || null) : null,
-    category: '',
-    examName: toStr(examName),
-    applyStart: excelSerialToDate(applyStart),
-    applyEnd: excelSerialToDate(applyEnd),
-    examDate: excelSerialToDate(examDate),
-    resultDate: excelSerialToDate(resultDate),
-    annual: toStr(annual),
-    refund: toStr(refund),
-  };
-}
-
-function toStr(v: any): string { return (v == null ? '' : String(v)).trim(); }
 
 async function legacyLoad(path: string): Promise<SchoolRecord[]> {
   const isTxt = path.endsWith('.txt');
