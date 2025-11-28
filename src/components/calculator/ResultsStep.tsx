@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { School, InternalGrades, ExamScores, SubjectWeights, AdditionalScores } from '../../types/calculator';
-import { calculateResults, calculateSchoolResults } from '../../utils/calculatorUtils';
+import { calculateResults } from '../../utils/calculatorUtils';
 
 interface ResultsStepProps {
   onBack: () => void;
@@ -32,12 +32,31 @@ export const ResultsStep: React.FC<ResultsStepProps> = ({
   useSpeaking,
 }) => {
   const [selectedSchoolId, setSelectedSchoolId] = useState<number | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // 학교별 결과 계산
+  // 학력고사 원점수 조정을 위한 state (초기값은 입력된 시험 점수 합계)
+  const initialTestRawTotal =
+    examScores.japanese + examScores.math + examScores.english + examScores.social + examScores.science;
+  const [adjustedTestRawTotal, setAdjustedTestRawTotal] = useState(initialTestRawTotal);
+
+  // 조정된 원점수로 examScores 재계산
+  const adjustedExamScores: ExamScores = {
+    japanese: Math.round((examScores.japanese / initialTestRawTotal) * adjustedTestRawTotal),
+    math: Math.round((examScores.math / initialTestRawTotal) * adjustedTestRawTotal),
+    english: Math.round((examScores.english / initialTestRawTotal) * adjustedTestRawTotal),
+    social: Math.round((examScores.social / initialTestRawTotal) * adjustedTestRawTotal),
+    science: adjustedTestRawTotal -
+      Math.round((examScores.japanese / initialTestRawTotal) * adjustedTestRawTotal) -
+      Math.round((examScores.math / initialTestRawTotal) * adjustedTestRawTotal) -
+      Math.round((examScores.english / initialTestRawTotal) * adjustedTestRawTotal) -
+      Math.round((examScores.social / initialTestRawTotal) * adjustedTestRawTotal),
+  };
+
+  // 학교별 결과 계산 (조정된 점수 사용)
   const schoolResults = selectedSchools.map((school) => {
     const results = calculateResults(
       internalGrades,
-      examScores,
+      adjustedExamScores,
       weights,
       additionalScores,
       useWeights,
@@ -76,8 +95,73 @@ export const ResultsStep: React.FC<ResultsStepProps> = ({
   // 선택된 학교의 상세 정보
   const selectedSchoolResult = schoolResults.find((sr) => sr.id === selectedSchoolId);
 
+  // 대표 결과 (첫 번째 학교 기준으로 개요 표시)
+  const overviewResult = schoolResults.length > 0 ? schoolResults[0].results : null;
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      {/* 개요 섹션 */}
+      {overviewResult && (
+        <div style={{ background: 'white', borderRadius: '12px', padding: '24px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)' }}>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: '#1f2937', marginTop: 0, marginBottom: '20px' }}>
+            개요
+          </h2>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginBottom: '24px' }}>
+            {/* 최종 점수 */}
+            <div style={{ background: '#f3f4f6', borderRadius: '8px', padding: '16px' }}>
+              <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '8px' }}>최종 점수</div>
+              <div style={{ fontSize: '2rem', fontWeight: 700, color: '#1f2937' }}>
+                {overviewResult.finalScore.toFixed(1)}
+              </div>
+            </div>
+
+            {/* 학력고사 원점수 */}
+            <div style={{ background: '#f3f4f6', borderRadius: '8px', padding: '16px' }}>
+              <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '8px' }}>학력고사 원점수</div>
+              <div style={{ fontSize: '2rem', fontWeight: 700, color: '#1f2937' }}>
+                {adjustedTestRawTotal} <span style={{ fontSize: '1rem', fontWeight: 400, color: '#6b7280' }}>/ 500</span>
+              </div>
+            </div>
+          </div>
+
+          {/* 원점수 슬라이드바 */}
+          <div style={{ background: '#f9fafb', borderRadius: '8px', padding: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <div style={{ fontSize: '0.875rem', fontWeight: 600, color: '#374151' }}>
+                학력고사 원점수 조정
+              </div>
+              <span style={{ fontSize: '1.125rem', fontWeight: 600, color: '#3b82f6' }}>
+                {adjustedTestRawTotal}점
+              </span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="500"
+              value={adjustedTestRawTotal}
+              onChange={(e) => setAdjustedTestRawTotal(Number(e.target.value))}
+              style={{
+                width: '100%',
+                height: '8px',
+                borderRadius: '4px',
+                background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${(adjustedTestRawTotal / 500) * 100}%, #e5e7eb ${(adjustedTestRawTotal / 500) * 100}%, #e5e7eb 100%)`,
+                outline: 'none',
+                appearance: 'none',
+                cursor: 'pointer',
+              }}
+            />
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px', fontSize: '0.75rem', color: '#6b7280' }}>
+              <span>0</span>
+              <span>500</span>
+            </div>
+            <div style={{ marginTop: '12px', fontSize: '0.75rem', color: '#6b7280', textAlign: 'center' }}>
+              슬라이드바를 움직여 학력고사 점수를 조정하면 아래 합격권이 실시간으로 변경됩니다
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 학교별 비교 테이블 */}
       <div style={{ background: 'white', borderRadius: '12px', padding: '24px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)' }}>
         <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: '#1f2937', marginTop: 0, marginBottom: '20px' }}>
@@ -93,9 +177,6 @@ export const ResultsStep: React.FC<ResultsStepProps> = ({
                 </th>
                 <th style={{ padding: '12px', textAlign: 'center', fontSize: '0.875rem', fontWeight: 600, color: '#374151' }}>
                   계산 패턴
-                </th>
-                <th style={{ padding: '12px', textAlign: 'center', fontSize: '0.875rem', fontWeight: 600, color: '#374151' }}>
-                  최종 점수
                 </th>
                 <th style={{ padding: '12px', textAlign: 'center', fontSize: '0.875rem', fontWeight: 600, color: '#374151' }}>
                   80% 합격
@@ -124,9 +205,6 @@ export const ResultsStep: React.FC<ResultsStepProps> = ({
                     {schoolResult.pattern_type === 'simple'
                       ? '단순형'
                       : `비율형 (${schoolResult.ratio_test}:${schoolResult.ratio_naishin})`}
-                  </td>
-                  <td style={{ padding: '12px', textAlign: 'center', fontSize: '1rem', fontWeight: 600, color: '#1f2937' }}>
-                    {schoolResult.results.finalScore.toFixed(1)}
                   </td>
                   <td style={{ padding: '12px', textAlign: 'center' }}>
                     {schoolResult.passRate80Status === 'unknown' ? (
