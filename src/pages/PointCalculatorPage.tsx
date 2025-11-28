@@ -130,8 +130,20 @@ export const PointCalculatorPage: React.FC = () => {
 
   // 계산 로직
   const calculateResults = () => {
-    // 1. 내신 원점수
-    const naishinRaw = Object.values(internalGrades).reduce((sum, grade) => sum + grade, 0);
+    // 1. 내신 원점수 (기술가정, 체육, 음악, 미술은 2배 가중치)
+    const naishinRaw =
+      internalGrades.japanese +
+      internalGrades.math +
+      internalGrades.english +
+      internalGrades.social +
+      internalGrades.science +
+      (internalGrades.tech_home * 2) +
+      (internalGrades.pe * 2) +
+      (internalGrades.music * 2) +
+      (internalGrades.art * 2);
+
+    // 내신 최대값은 65점 (5과목 × 5 + 4과목 × 5 × 2 = 25 + 40 = 65)
+    const naishinMaxRaw = 65;
 
     // 2. 내신 환산점
     const naishinScaled = naishinRaw * naishinMultiplier;
@@ -161,19 +173,21 @@ export const PointCalculatorPage: React.FC = () => {
     let testFinal = 0;
 
     if (patternType === 'simple') {
-      // 패턴 A: 단순형 (135 + 500)
+      // 패턴 A: 단순형 (내신환산 + 시험)
       naishinFinal = naishinScaled;
       testFinal = testWeightedTotal;
       finalScore = naishinFinal + testFinal + extraTotal;
     } else {
-      // 패턴 B: 비율형 (7:3, 6:4, 5:5 등)
+      // 패턴 B: 비율형 (총점 1000점 기준)
       const totalRatio = ratioTest + ratioNaishin;
-      const finalMax = 1000; // 최종 만점을 1000으로 가정
+      const finalMax = 1000;
       const naishinMaxComponent = finalMax * (ratioNaishin / totalRatio);
       const testMaxComponent = finalMax * (ratioTest / totalRatio);
 
-      naishinFinal = (naishinRaw / 45) * naishinMaxComponent;
+      // 내신: 65점 만점 기준으로 비율 계산
+      naishinFinal = (naishinRaw / naishinMaxRaw) * naishinMaxComponent;
 
+      // 시험: 500점 만점 기준으로 비율 계산
       const testWeightedMax = useWeights
         ? 100 * (weights.japanese + weights.math + weights.english + weights.social + weights.science)
         : 500;
@@ -184,6 +198,7 @@ export const PointCalculatorPage: React.FC = () => {
 
     return {
       naishinRaw,
+      naishinMaxRaw,
       naishinScaled,
       testRawTotal,
       testWeightedTotal,
@@ -632,13 +647,15 @@ export const PointCalculatorPage: React.FC = () => {
             </div>
 
             <div style={{ marginTop: '20px', padding: '16px', background: '#f3f4f6', borderRadius: '8px' }}>
-              <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '4px' }}>내신 원점수</div>
+              <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '4px' }}>
+                내신 원점수 (실기 4과목은 2배 가중치)
+              </div>
               <div style={{ fontSize: '1.5rem', fontWeight: 600, color: '#1f2937' }}>
-                {results.naishinRaw} / 45
+                {results.naishinRaw} / {results.naishinMaxRaw}
               </div>
               <div style={{ fontSize: '0.875rem', color: '#6b7280', marginTop: '8px', marginBottom: '4px' }}>내신 환산점 (×{naishinMultiplier})</div>
               <div style={{ fontSize: '1.5rem', fontWeight: 600, color: '#3b82f6' }}>
-                {results.naishinScaled} / {45 * naishinMultiplier}
+                {results.naishinScaled} / {results.naishinMaxRaw * naishinMultiplier}
               </div>
             </div>
           </div>
@@ -901,7 +918,7 @@ export const PointCalculatorPage: React.FC = () => {
                 {results.finalScore.toFixed(1)}
               </div>
               <div style={{ fontSize: '1rem', color: 'rgba(255, 255, 255, 0.9)', marginTop: '8px' }}>
-                {patternType === 'simple' ? '단순형 (최대 635점)' : `비율형 ${ratioTest}:${ratioNaishin} (최대 1000점)`}
+                {patternType === 'simple' ? '단순형 (최대 695점)' : `비율형 ${ratioTest}:${ratioNaishin} (최대 1000점)`}
               </div>
             </div>
 
