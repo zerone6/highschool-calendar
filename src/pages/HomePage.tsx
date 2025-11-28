@@ -21,6 +21,7 @@ export const HomePage: React.FC = () => {
     })
       .then((res) => res.json())
       .then((data) => {
+        console.log('Auth status response:', data);
         if (data.authenticated && data.user) {
           setUser(data.user);
         }
@@ -29,6 +30,23 @@ export const HomePage: React.FC = () => {
         console.error('Failed to fetch auth status:', err);
       });
   }, []);
+
+  useEffect(() => {
+    // Close dropdown when clicking outside
+    const handleClickOutside = () => {
+      if (dropdownOpen) {
+        setDropdownOpen(false);
+      }
+    };
+
+    if (dropdownOpen) {
+      document.addEventListener('click', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [dropdownOpen]);
 
   const getInitial = (email: string) => {
     return email.charAt(0).toUpperCase();
@@ -97,7 +115,10 @@ export const HomePage: React.FC = () => {
           {user && (
             <div style={{ position: 'relative' }}>
               <button
-                onClick={() => setDropdownOpen(!dropdownOpen)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDropdownOpen(!dropdownOpen);
+                }}
                 style={{
                   background: 'none',
                   border: 'none',
@@ -275,20 +296,17 @@ export const HomePage: React.FC = () => {
         flex: 1,
         overflowY: 'auto',
         padding: '32px 20px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
       }}>
         <div style={{
           maxWidth: '1200px',
           width: '100%',
+          margin: '0 auto',
         }}>
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
             gap: '24px',
             maxWidth: '800px',
-            margin: '0 auto',
           }}>
             {/* School Schedule Card */}
             <div
