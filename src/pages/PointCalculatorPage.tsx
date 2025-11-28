@@ -140,7 +140,19 @@ export const PointCalculatorPage: React.FC = () => {
 
   // 계산 로직
   const calculateResults = () => {
-    // 1. 내신 원점수 (기술가정, 체육, 음악, 미술은 2배 가중치)
+    // 1-1. 내신 원점수 (가중치 없음, 9과목 × 5 = 45점 만점)
+    const naishinRawNoWeight =
+      internalGrades.japanese +
+      internalGrades.math +
+      internalGrades.english +
+      internalGrades.social +
+      internalGrades.science +
+      internalGrades.tech_home +
+      internalGrades.pe +
+      internalGrades.music +
+      internalGrades.art;
+
+    // 1-2. 내신 원점수 (기술가정, 체육, 음악, 미술은 2배 가중치)
     const naishinRaw =
       internalGrades.japanese +
       internalGrades.math +
@@ -208,6 +220,7 @@ export const PointCalculatorPage: React.FC = () => {
     }
 
     return {
+      naishinRawNoWeight,
       naishinRaw,
       naishinMaxRaw,
       naishinScaled,
@@ -659,14 +672,14 @@ export const PointCalculatorPage: React.FC = () => {
 
             <div style={{ marginTop: '20px', padding: '16px', background: '#f3f4f6', borderRadius: '8px' }}>
               <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '4px' }}>
-                내신 원점수 (실기 4과목은 2배 가중치)
+                내신 원점수 (가중치 없음)
               </div>
               <div style={{ fontSize: '1.5rem', fontWeight: 600, color: '#1f2937' }}>
-                {results.naishinRaw} / {results.naishinMaxRaw}
+                {results.naishinRawNoWeight} / 45
               </div>
-              <div style={{ fontSize: '0.875rem', color: '#6b7280', marginTop: '8px', marginBottom: '4px' }}>내신 환산점 (×{naishinMultiplier})</div>
+              <div style={{ fontSize: '0.875rem', color: '#6b7280', marginTop: '8px', marginBottom: '4px' }}>환산 내신 (실기 4과목 2배)</div>
               <div style={{ fontSize: '1.5rem', fontWeight: 600, color: '#3b82f6' }}>
-                {results.naishinScaled} / {results.naishinMaxRaw * naishinMultiplier}
+                {results.naishinRaw} / {results.naishinMaxRaw}
               </div>
             </div>
           </div>
