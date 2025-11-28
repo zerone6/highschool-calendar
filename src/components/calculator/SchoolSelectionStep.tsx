@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { School } from '../../types/calculator';
-import { getSchools, createSchool, addSelectedSchool } from '../../api/calculator';
+import { getSchools, createSchool, addSelectedSchool, excludeSchool } from '../../api/calculator';
 
 interface SchoolSelectionStepProps {
   onNext: () => void;
@@ -125,9 +125,21 @@ export const SchoolSelectionStep: React.FC<SchoolSelectionStepProps> = ({
     }
   };
 
-  // 선택 목록에서 학교 제거
-  const handleRemoveSchool = (schoolId: number) => {
-    onSchoolsChange(selectedSchools.filter((s) => s.id !== schoolId));
+  // 선택 목록에서 학교 제거 및 제외 목록에 추가
+  const handleRemoveSchool = async (schoolId: number) => {
+    try {
+      // DB에서 선택 목록 제거 및 제외 목록에 추가
+      await excludeSchool(schoolId);
+
+      // 로컬 상태 업데이트
+      onSchoolsChange(selectedSchools.filter((s) => s.id !== schoolId));
+
+      // 이용 가능한 학교 목록에서도 제거
+      setAvailableSchools(availableSchools.filter((s) => s.id !== schoolId));
+    } catch (err) {
+      console.error('Failed to exclude school:', err);
+      setError('학교 제거에 실패했습니다.');
+    }
   };
 
   // 학교 입력 종료 (다음 단계로)

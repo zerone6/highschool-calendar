@@ -182,3 +182,40 @@ export async function updateSelectedSchoolsOrder(
     throw new Error('Failed to update selected schools order');
   }
 }
+
+// ============= Excluded Schools API =============
+
+export async function excludeSchool(schoolId: number): Promise<void> {
+  const response = await fetch(`${API_BASE}/excluded-schools/${schoolId}`, {
+    method: 'POST',
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to exclude school');
+  }
+}
+
+export async function includeSchool(schoolId: number): Promise<void> {
+  const response = await fetch(`${API_BASE}/excluded-schools/${schoolId}`, {
+    method: 'DELETE',
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to include school');
+  }
+}
+
+export async function getExcludedSchools(): Promise<School[]> {
+  const response = await fetch(`${API_BASE}/excluded-schools`, {
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch excluded schools');
+  }
+
+  const data = await response.json();
+  return data.schools;
+}
