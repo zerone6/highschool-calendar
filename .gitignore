@@ -33,3 +33,7 @@ logs/
 # Temporary files
 tmp/
 temp/
+
+# TypeScript compiled JS files in src (keep only TS files)
+src/**/*.js
+!src/**/*.config.js
