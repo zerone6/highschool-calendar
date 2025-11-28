@@ -322,6 +322,7 @@ export const HomePage: React.FC = () => {
             gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
             gap: '24px',
             maxWidth: '800px',
+            margin: '0 auto',
           }}>
             {/* School Schedule Card */}
             <div
