@@ -145,6 +145,13 @@ export const HomePage: React.FC = () => {
                     <img
                       src={user.picture_url}
                       alt="Profile"
+                      onError={(e) => {
+                        console.error('Failed to load profile image:', user.picture_url);
+                        e.currentTarget.style.display = 'none';
+                      }}
+                      onLoad={() => {
+                        console.log('Profile image loaded successfully:', user.picture_url);
+                      }}
                       style={{
                         width: '100%',
                         height: '100%',
@@ -195,6 +202,10 @@ export const HomePage: React.FC = () => {
                         <img
                           src={user.picture_url}
                           alt="Profile"
+                          onError={(e) => {
+                            console.error('Failed to load dropdown profile image:', user.picture_url);
+                            e.currentTarget.style.display = 'none';
+                          }}
                           style={{
                             width: '100%',
                             height: '100%',
