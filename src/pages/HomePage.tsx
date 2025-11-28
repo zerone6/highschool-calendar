@@ -145,6 +145,8 @@ export const HomePage: React.FC = () => {
                     <img
                       src={user.picture_url}
                       alt="Profile"
+                      referrerPolicy="no-referrer"
+                      crossOrigin="anonymous"
                       onError={(e) => {
                         console.error('Failed to load profile image:', user.picture_url);
                         e.currentTarget.style.display = 'none';
@@ -202,6 +204,8 @@ export const HomePage: React.FC = () => {
                         <img
                           src={user.picture_url}
                           alt="Profile"
+                          referrerPolicy="no-referrer"
+                          crossOrigin="anonymous"
                           onError={(e) => {
                             console.error('Failed to load dropdown profile image:', user.picture_url);
                             e.currentTarget.style.display = 'none';
