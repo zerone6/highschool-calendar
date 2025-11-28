@@ -328,6 +328,7 @@ export const HomePage: React.FC = () => {
             gap: '24px',
             maxWidth: '800px',
             margin: '0 auto',
+            justifyItems: 'center',
           }}>
             {/* School Schedule Card */}
             <div
@@ -393,7 +394,7 @@ export const HomePage: React.FC = () => {
         background: 'rgba(255, 255, 255, 0.1)',
         backdropFilter: 'blur(10px)',
         borderTop: '1px solid rgba(255, 255, 255, 0.2)',
-        padding: '20px',
+        padding: '16px 0',
         textAlign: 'center',
       }}>
         <p style={{
