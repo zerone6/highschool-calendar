@@ -342,6 +342,7 @@ export const HomePage: React.FC = () => {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '16px',
+                maxWidth: '400px',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-4px)';
