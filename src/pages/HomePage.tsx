@@ -323,12 +323,12 @@ export const HomePage: React.FC = () => {
           margin: '0 auto',
         }}>
           <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            display: 'flex',
+            flexWrap: 'wrap',
             gap: '24px',
             maxWidth: '800px',
             margin: '0 auto',
-            justifyItems: 'center',
+            justifyContent: 'center',
           }}>
             {/* School Schedule Card */}
             <div
@@ -343,7 +343,8 @@ export const HomePage: React.FC = () => {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '16px',
-                maxWidth: '400px',
+                width: '388px',
+                flexShrink: 0,
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-4px)';
