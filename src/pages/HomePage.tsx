@@ -58,11 +58,16 @@ export const HomePage: React.FC = () => {
 
   return (
     <div style={{
+      margin: 0,
+      padding: 0,
+      boxSizing: 'border-box',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
       background: 'linear-gradient(to bottom right, #6366f1, #a855f7, #9333ea)',
       minHeight: '100vh',
       display: 'flex',
       flexDirection: 'column',
+      width: '100%',
+      overflow: 'hidden',
     }}>
       {/* Header */}
       <header style={{
