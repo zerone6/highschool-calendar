@@ -535,16 +535,112 @@ export const PointCalculatorPageNew: React.FC = () => {
             ))}
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px' }}>
-            <span style={{ fontSize: '0.75rem', color: 'white', fontWeight: currentStep === 1 ? 600 : 400 }}>
+            <span
+              role="button"
+              tabIndex={0}
+              onClick={() => setCurrentStep(1)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setCurrentStep(1);
+                }
+              }}
+              style={{
+                fontSize: '0.75rem',
+                color: 'white',
+                fontWeight: currentStep === 1 ? 600 : 400,
+                cursor: 'pointer',
+                transition: 'opacity 0.2s',
+                opacity: 1,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.opacity = '0.8';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = '1';
+              }}
+            >
               1. 학교 선택
             </span>
-            <span style={{ fontSize: '0.75rem', color: 'white', fontWeight: currentStep === 2 ? 600 : 400 }}>
+            <span
+              role="button"
+              tabIndex={0}
+              onClick={() => setCurrentStep(2)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setCurrentStep(2);
+                }
+              }}
+              style={{
+                fontSize: '0.75rem',
+                color: 'white',
+                fontWeight: currentStep === 2 ? 600 : 400,
+                cursor: 'pointer',
+                transition: 'opacity 0.2s',
+                opacity: 1,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.opacity = '0.8';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = '1';
+              }}
+            >
               2. 내신 입력
             </span>
-            <span style={{ fontSize: '0.75rem', color: 'white', fontWeight: currentStep === 3 ? 600 : 400 }}>
+            <span
+              role="button"
+              tabIndex={0}
+              onClick={() => setCurrentStep(3)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setCurrentStep(3);
+                }
+              }}
+              style={{
+                fontSize: '0.75rem',
+                color: 'white',
+                fontWeight: currentStep === 3 ? 600 : 400,
+                cursor: 'pointer',
+                transition: 'opacity 0.2s',
+                opacity: 1,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.opacity = '0.8';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = '1';
+              }}
+            >
               3. 시험 점수
             </span>
-            <span style={{ fontSize: '0.75rem', color: 'white', fontWeight: currentStep === 4 ? 600 : 400 }}>
+            <span
+              role="button"
+              tabIndex={0}
+              onClick={() => setCurrentStep(4)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setCurrentStep(4);
+                }
+              }}
+              style={{
+                fontSize: '0.75rem',
+                color: 'white',
+                fontWeight: currentStep === 4 ? 600 : 400,
+                cursor: 'pointer',
+                transition: 'opacity 0.2s',
+                opacity: 1,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.opacity = '0.8';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = '1';
+              }}
+            >
               4. 최종 결과
             </span>
           </div>

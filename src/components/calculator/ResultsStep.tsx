@@ -31,8 +31,8 @@ export const ResultsStep: React.FC<ResultsStepProps> = ({
   useBonus,
   useSpeaking,
 }) => {
-  const [selectedSchoolId, setSelectedSchoolId] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalSchoolId, setModalSchoolId] = useState<number | null>(null);
 
   // 학력고사 원점수 조정을 위한 state (초기값은 입력된 시험 점수 합계)
   const initialTestRawTotal =
@@ -50,6 +50,16 @@ export const ResultsStep: React.FC<ResultsStepProps> = ({
       Math.round((examScores.math / initialTestRawTotal) * adjustedTestRawTotal) -
       Math.round((examScores.english / initialTestRawTotal) * adjustedTestRawTotal) -
       Math.round((examScores.social / initialTestRawTotal) * adjustedTestRawTotal),
+  };
+
+  // 합격 상태 판정 함수
+  const getPassStatus = (finalScore: number, targetScore: number | null) => {
+    if (targetScore === null) return 'unknown';
+    const diff = finalScore - targetScore;
+    if (diff >= 30) return 'safe';     // 안정권
+    if (diff >= 0) return 'possible';  // 가능권
+    if (diff >= -30) return 'risky';   // 위험권
+    return 'difficult';                 // 어려움
   };
 
   // 학교별 결과 계산 (조정된 점수 사용)
@@ -70,19 +80,8 @@ export const ResultsStep: React.FC<ResultsStepProps> = ({
       school.ratio_naishin
     );
 
-    const passRate80Status =
-      school.pass_rate_80 !== null
-        ? results.finalScore >= school.pass_rate_80
-          ? 'pass'
-          : 'fail'
-        : 'unknown';
-
-    const passRate60Status =
-      school.pass_rate_60 !== null
-        ? results.finalScore >= school.pass_rate_60
-          ? 'pass'
-          : 'fail'
-        : 'unknown';
+    const passRate80Status = getPassStatus(results.finalScore, school.pass_rate_80);
+    const passRate60Status = getPassStatus(results.finalScore, school.pass_rate_60);
 
     return {
       ...school,
@@ -92,11 +91,27 @@ export const ResultsStep: React.FC<ResultsStepProps> = ({
     };
   });
 
-  // 선택된 학교의 상세 정보
-  const selectedSchoolResult = schoolResults.find((sr) => sr.id === selectedSchoolId);
-
   // 대표 결과 (첫 번째 학교 기준으로 개요 표시)
   const overviewResult = schoolResults.length > 0 ? schoolResults[0].results : null;
+
+  // 모달에 표시할 학교 결과
+  const modalSchoolResult = schoolResults.find((sr) => sr.id === modalSchoolId);
+
+  // 상태별 스타일
+  const getStatusStyle = (status: string) => {
+    switch (status) {
+      case 'safe':
+        return { background: '#10b981', color: 'white', text: '안정권' };
+      case 'possible':
+        return { background: '#3b82f6', color: 'white', text: '가능권' };
+      case 'risky':
+        return { background: '#f59e0b', color: 'white', text: '위험권' };
+      case 'difficult':
+        return { background: '#ef4444', color: 'white', text: '어려움' };
+      default:
+        return { background: '#9ca3af', color: 'white', text: '-' };
+    }
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -107,17 +122,41 @@ export const ResultsStep: React.FC<ResultsStepProps> = ({
             개요
           </h2>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginBottom: '24px' }}>
-            {/* 최종 점수 */}
-            <div style={{ background: '#f3f4f6', borderRadius: '8px', padding: '16px' }}>
-              <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '8px' }}>최종 점수</div>
+          <div style={{ display: 'flex', gap: '20px', marginBottom: '24px' }}>
+            {/* 최종 점수 - 클릭 가능 */}
+            <div
+              onClick={() => {
+                if (schoolResults.length > 0) {
+                  setModalSchoolId(schoolResults[0].id);
+                  setIsModalOpen(true);
+                }
+              }}
+              style={{
+                flex: 1,
+                background: '#f3f4f6',
+                borderRadius: '8px',
+                padding: '16px',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                border: '2px solid transparent',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#e5e7eb';
+                e.currentTarget.style.borderColor = '#3b82f6';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = '#f3f4f6';
+                e.currentTarget.style.borderColor = 'transparent';
+              }}
+            >
+              <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '8px' }}>최종 점수 (클릭하여 상세보기)</div>
               <div style={{ fontSize: '2rem', fontWeight: 700, color: '#1f2937' }}>
                 {overviewResult.finalScore.toFixed(1)}
               </div>
             </div>
 
             {/* 학력고사 원점수 */}
-            <div style={{ background: '#f3f4f6', borderRadius: '8px', padding: '16px' }}>
+            <div style={{ flex: 1, background: '#f3f4f6', borderRadius: '8px', padding: '16px' }}>
               <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '8px' }}>학력고사 원점수</div>
               <div style={{ fontSize: '2rem', fontWeight: 700, color: '#1f2937' }}>
                 {adjustedTestRawTotal} <span style={{ fontSize: '1rem', fontWeight: 400, color: '#6b7280' }}>/ 500</span>
@@ -184,9 +223,6 @@ export const ResultsStep: React.FC<ResultsStepProps> = ({
                 <th style={{ padding: '12px', textAlign: 'center', fontSize: '0.875rem', fontWeight: 600, color: '#374151' }}>
                   60% 합격
                 </th>
-                <th style={{ padding: '12px', textAlign: 'center', fontSize: '0.875rem', fontWeight: 600, color: '#374151' }}>
-                  상세
-                </th>
               </tr>
             </thead>
             <tbody>
@@ -195,7 +231,6 @@ export const ResultsStep: React.FC<ResultsStepProps> = ({
                   key={schoolResult.id}
                   style={{
                     borderBottom: '1px solid #e5e7eb',
-                    background: selectedSchoolId === schoolResult.id ? '#f3f4f6' : 'transparent',
                   }}
                 >
                   <td style={{ padding: '12px', fontSize: '0.875rem', color: '#374151', fontWeight: 500 }}>
@@ -207,79 +242,58 @@ export const ResultsStep: React.FC<ResultsStepProps> = ({
                       : `비율형 (${schoolResult.ratio_test}:${schoolResult.ratio_naishin})`}
                   </td>
                   <td style={{ padding: '12px', textAlign: 'center' }}>
-                    {schoolResult.passRate80Status === 'unknown' ? (
-                      <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>-</span>
-                    ) : (
-                      <span
-                        style={{
-                          display: 'inline-block',
-                          padding: '4px 8px',
-                          borderRadius: '4px',
-                          fontSize: '0.75rem',
-                          fontWeight: 600,
-                          background: schoolResult.passRate80Status === 'pass' ? '#dcfce7' : '#fee2e2',
-                          color: schoolResult.passRate80Status === 'pass' ? '#16a34a' : '#dc2626',
-                        }}
-                      >
-                        {schoolResult.passRate80Status === 'pass' ? '합격권' : '미달'}
-                      </span>
-                    )}
-                    {schoolResult.pass_rate_80 && (
-                      <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '4px' }}>
-                        ({schoolResult.pass_rate_80}점)
-                      </div>
-                    )}
+                    {(() => {
+                      const style = getStatusStyle(schoolResult.passRate80Status);
+                      return (
+                        <div>
+                          <span
+                            style={{
+                              display: 'inline-block',
+                              padding: '4px 12px',
+                              borderRadius: '4px',
+                              fontSize: '0.75rem',
+                              fontWeight: 600,
+                              background: style.background,
+                              color: style.color,
+                            }}
+                          >
+                            {style.text}
+                          </span>
+                          {schoolResult.pass_rate_80 && (
+                            <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '4px' }}>
+                              ({schoolResult.pass_rate_80}점)
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </td>
                   <td style={{ padding: '12px', textAlign: 'center' }}>
-                    {schoolResult.passRate60Status === 'unknown' ? (
-                      <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>-</span>
-                    ) : (
-                      <span
-                        style={{
-                          display: 'inline-block',
-                          padding: '4px 8px',
-                          borderRadius: '4px',
-                          fontSize: '0.75rem',
-                          fontWeight: 600,
-                          background: schoolResult.passRate60Status === 'pass' ? '#dcfce7' : '#fee2e2',
-                          color: schoolResult.passRate60Status === 'pass' ? '#16a34a' : '#dc2626',
-                        }}
-                      >
-                        {schoolResult.passRate60Status === 'pass' ? '합격권' : '미달'}
-                      </span>
-                    )}
-                    {schoolResult.pass_rate_60 && (
-                      <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '4px' }}>
-                        ({schoolResult.pass_rate_60}점)
-                      </div>
-                    )}
-                  </td>
-                  <td style={{ padding: '12px', textAlign: 'center' }}>
-                    <button
-                      onClick={() =>
-                        setSelectedSchoolId(selectedSchoolId === schoolResult.id ? null : schoolResult.id)
-                      }
-                      style={{
-                        padding: '6px 12px',
-                        background: selectedSchoolId === schoolResult.id ? '#6b7280' : '#3b82f6',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '6px',
-                        fontSize: '0.75rem',
-                        cursor: 'pointer',
-                        transition: 'background 0.2s',
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background =
-                          selectedSchoolId === schoolResult.id ? '#4b5563' : '#2563eb';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background =
-                          selectedSchoolId === schoolResult.id ? '#6b7280' : '#3b82f6';
-                      }}
-                    >
-                      {selectedSchoolId === schoolResult.id ? '닫기' : '상세보기'}
-                    </button>
+                    {(() => {
+                      const style = getStatusStyle(schoolResult.passRate60Status);
+                      return (
+                        <div>
+                          <span
+                            style={{
+                              display: 'inline-block',
+                              padding: '4px 12px',
+                              borderRadius: '4px',
+                              fontSize: '0.75rem',
+                              fontWeight: 600,
+                              background: style.background,
+                              color: style.color,
+                            }}
+                          >
+                            {style.text}
+                          </span>
+                          {schoolResult.pass_rate_60 && (
+                            <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '4px' }}>
+                              ({schoolResult.pass_rate_60}점)
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </td>
                 </tr>
               ))}
@@ -288,212 +302,257 @@ export const ResultsStep: React.FC<ResultsStepProps> = ({
         </div>
       </div>
 
-      {/* 상세 결과 (선택한 학교) */}
-      {selectedSchoolResult && (
+      {/* 모달 */}
+      {isModalOpen && modalSchoolResult && (
         <div
           style={{
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            borderRadius: '12px',
-            padding: '32px',
-            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '20px',
           }}
+          onClick={() => setIsModalOpen(false)}
         >
-          <h2
-            style={{
-              fontSize: '1.5rem',
-              fontWeight: 600,
-              color: 'white',
-              marginTop: 0,
-              marginBottom: '8px',
-              textAlign: 'center',
-            }}
-          >
-            {selectedSchoolResult.name}
-          </h2>
-          <div style={{ fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.9)', textAlign: 'center', marginBottom: '24px' }}>
-            {selectedSchoolResult.pattern_type === 'simple'
-              ? '단순형 (최대 695점)'
-              : `비율형 ${selectedSchoolResult.ratio_test}:${selectedSchoolResult.ratio_naishin} (최대 1000점)`}
-          </div>
-
-          <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-            <div style={{ fontSize: '3rem', fontWeight: 700, color: 'white', lineHeight: 1 }}>
-              {selectedSchoolResult.results.finalScore.toFixed(1)}
-            </div>
-            <div style={{ fontSize: '1rem', color: 'rgba(255, 255, 255, 0.9)', marginTop: '8px' }}>최종 점수</div>
-          </div>
-
-          {/* 점수 구성 */}
           <div
             style={{
-              background: 'rgba(255, 255, 255, 0.1)',
-              borderRadius: '8px',
-              padding: '20px',
-              backdropFilter: 'blur(10px)',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              borderRadius: '12px',
+              padding: '32px',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+              maxWidth: '600px',
+              width: '100%',
+              maxHeight: '90vh',
+              overflowY: 'auto',
             }}
+            onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ fontSize: '1rem', fontWeight: 600, color: 'white', marginBottom: '16px' }}>점수 구성</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.9)' }}>내신</span>
-                <span style={{ fontSize: '1.125rem', fontWeight: 600, color: 'white' }}>
-                  {selectedSchoolResult.results.naishinFinal.toFixed(1)} 점
-                </span>
-              </div>
-              <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.2)' }}></div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.9)' }}>시험</span>
-                <span style={{ fontSize: '1.125rem', fontWeight: 600, color: 'white' }}>
-                  {selectedSchoolResult.results.testFinal.toFixed(1)} 점
-                </span>
-              </div>
-              {selectedSchoolResult.results.extraTotal > 0 && (
-                <>
-                  <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.2)' }}></div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.9)' }}>추가</span>
-                    <span style={{ fontSize: '1.125rem', fontWeight: 600, color: 'white' }}>
-                      {selectedSchoolResult.results.extraTotal} 점
-                    </span>
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* 시각화 바 */}
-            <div style={{ marginTop: '20px' }}>
-              <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.8)', marginBottom: '8px' }}>점수 비율</div>
-              <div
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h2
                 style={{
-                  display: 'flex',
-                  height: '20px',
-                  borderRadius: '10px',
-                  overflow: 'hidden',
-                  background: 'rgba(255, 255, 255, 0.2)',
+                  fontSize: '1.5rem',
+                  fontWeight: 600,
+                  color: 'white',
+                  margin: 0,
                 }}
               >
+                {modalSchoolResult.name}
+              </h2>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  padding: '8px 16px',
+                  fontSize: '0.875rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'background 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+                }}
+              >
+                닫기
+              </button>
+            </div>
+
+            <div style={{ fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.9)', textAlign: 'center', marginBottom: '24px' }}>
+              {modalSchoolResult.pattern_type === 'simple'
+                ? '단순형 (최대 695점)'
+                : `비율형 ${modalSchoolResult.ratio_test}:${modalSchoolResult.ratio_naishin} (최대 1000점)`}
+            </div>
+
+            <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+              <div style={{ fontSize: '3rem', fontWeight: 700, color: 'white', lineHeight: 1 }}>
+                {modalSchoolResult.results.finalScore.toFixed(1)}
+              </div>
+              <div style={{ fontSize: '1rem', color: 'rgba(255, 255, 255, 0.9)', marginTop: '8px' }}>최종 점수</div>
+            </div>
+
+            {/* 점수 구성 */}
+            <div
+              style={{
+                background: 'rgba(255, 255, 255, 0.1)',
+                borderRadius: '8px',
+                padding: '20px',
+                backdropFilter: 'blur(10px)',
+              }}
+            >
+              <div style={{ fontSize: '1rem', fontWeight: 600, color: 'white', marginBottom: '16px' }}>점수 구성</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.9)' }}>내신</span>
+                  <span style={{ fontSize: '1.125rem', fontWeight: 600, color: 'white' }}>
+                    {modalSchoolResult.results.naishinFinal.toFixed(1)} 점
+                  </span>
+                </div>
+                <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.2)' }}></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.9)' }}>시험</span>
+                  <span style={{ fontSize: '1.125rem', fontWeight: 600, color: 'white' }}>
+                    {modalSchoolResult.results.testFinal.toFixed(1)} 점
+                  </span>
+                </div>
+                {modalSchoolResult.results.extraTotal > 0 && (
+                  <>
+                    <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.2)' }}></div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.9)' }}>추가</span>
+                      <span style={{ fontSize: '1.125rem', fontWeight: 600, color: 'white' }}>
+                        {modalSchoolResult.results.extraTotal} 점
+                      </span>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* 시각화 바 */}
+              <div style={{ marginTop: '20px' }}>
+                <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.8)', marginBottom: '8px' }}>점수 비율</div>
                 <div
                   style={{
-                    width: `${(selectedSchoolResult.results.naishinFinal / selectedSchoolResult.results.finalScore) * 100}%`,
-                    background: '#fbbf24',
                     display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
-                    color: '#78350f',
+                    height: '20px',
+                    borderRadius: '10px',
+                    overflow: 'hidden',
+                    background: 'rgba(255, 255, 255, 0.2)',
                   }}
                 >
-                  {((selectedSchoolResult.results.naishinFinal / selectedSchoolResult.results.finalScore) * 100).toFixed(0)}%
-                </div>
-                <div
-                  style={{
-                    width: `${(selectedSchoolResult.results.testFinal / selectedSchoolResult.results.finalScore) * 100}%`,
-                    background: '#60a5fa',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
-                    color: '#1e3a8a',
-                  }}
-                >
-                  {((selectedSchoolResult.results.testFinal / selectedSchoolResult.results.finalScore) * 100).toFixed(0)}%
-                </div>
-                {selectedSchoolResult.results.extraTotal > 0 && (
                   <div
                     style={{
-                      width: `${(selectedSchoolResult.results.extraTotal / selectedSchoolResult.results.finalScore) * 100}%`,
-                      background: '#34d399',
+                      width: `${(modalSchoolResult.results.naishinFinal / modalSchoolResult.results.finalScore) * 100}%`,
+                      background: '#fbbf24',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       fontSize: '0.75rem',
                       fontWeight: 600,
-                      color: '#064e3b',
+                      color: '#78350f',
                     }}
                   >
-                    {((selectedSchoolResult.results.extraTotal / selectedSchoolResult.results.finalScore) * 100).toFixed(0)}%
+                    {((modalSchoolResult.results.naishinFinal / modalSchoolResult.results.finalScore) * 100).toFixed(0)}%
                   </div>
-                )}
+                  <div
+                    style={{
+                      width: `${(modalSchoolResult.results.testFinal / modalSchoolResult.results.finalScore) * 100}%`,
+                      background: '#60a5fa',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      color: '#1e3a8a',
+                    }}
+                  >
+                    {((modalSchoolResult.results.testFinal / modalSchoolResult.results.finalScore) * 100).toFixed(0)}%
+                  </div>
+                  {modalSchoolResult.results.extraTotal > 0 && (
+                    <div
+                      style={{
+                        width: `${(modalSchoolResult.results.extraTotal / modalSchoolResult.results.finalScore) * 100}%`,
+                        background: '#34d399',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        color: '#064e3b',
+                      }}
+                    >
+                      {((modalSchoolResult.results.extraTotal / modalSchoolResult.results.finalScore) * 100).toFixed(0)}%
+                    </div>
+                  )}
+                </div>
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: '16px',
+                    marginTop: '12px',
+                    fontSize: '0.75rem',
+                    color: 'rgba(255, 255, 255, 0.8)',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: '#fbbf24' }}></div>
+                    내신
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: '#60a5fa' }}></div>
+                    시험
+                  </div>
+                  {modalSchoolResult.results.extraTotal > 0 && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: '#34d399' }}></div>
+                      추가
+                    </div>
+                  )}
+                </div>
               </div>
+            </div>
+
+            {/* 상세 내역 */}
+            <div style={{ marginTop: '24px' }}>
               <div
                 style={{
-                  display: 'flex',
-                  gap: '16px',
-                  marginTop: '12px',
-                  fontSize: '0.75rem',
-                  color: 'rgba(255, 255, 255, 0.8)',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  borderRadius: '8px',
+                  padding: '16px',
+                  backdropFilter: 'blur(10px)',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: '#fbbf24' }}></div>
-                  내신
+                <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'white', marginBottom: '12px' }}>
+                  내신 상세
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: '#60a5fa' }}></div>
-                  시험
-                </div>
-                {selectedSchoolResult.results.extraTotal > 0 && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: '#34d399' }}></div>
-                    추가
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* 상세 내역 */}
-          <div style={{ marginTop: '24px' }}>
-            <div
-              style={{
-                background: 'rgba(255, 255, 255, 0.1)',
-                borderRadius: '8px',
-                padding: '16px',
-                backdropFilter: 'blur(10px)',
-              }}
-            >
-              <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'white', marginBottom: '12px' }}>
-                내신 상세
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.9)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>원점수 (가중치 없음)</span>
-                  <span>{selectedSchoolResult.results.naishinRawNoWeight} / 45</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>환산 내신 (실기 4과목 2배)</span>
-                  <span>
-                    {selectedSchoolResult.results.naishinRaw} / {selectedSchoolResult.results.naishinMaxRaw}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div
-              style={{
-                background: 'rgba(255, 255, 255, 0.1)',
-                borderRadius: '8px',
-                padding: '16px',
-                backdropFilter: 'blur(10px)',
-                marginTop: '12px',
-              }}
-            >
-              <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'white', marginBottom: '12px' }}>
-                시험 상세
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.9)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>원점수</span>
-                  <span>{selectedSchoolResult.results.testRawTotal} / 500</span>
-                </div>
-                {useWeights && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.9)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span>가중치 적용 후</span>
-                    <span>{selectedSchoolResult.results.testWeightedTotal.toFixed(1)}</span>
+                    <span>원점수 (가중치 없음)</span>
+                    <span>{modalSchoolResult.results.naishinRawNoWeight} / 45</span>
                   </div>
-                )}
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span>환산 내신 (실기 4과목 2배)</span>
+                    <span>
+                      {modalSchoolResult.results.naishinRaw} / {modalSchoolResult.results.naishinMaxRaw}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  borderRadius: '8px',
+                  padding: '16px',
+                  backdropFilter: 'blur(10px)',
+                  marginTop: '12px',
+                }}
+              >
+                <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'white', marginBottom: '12px' }}>
+                  시험 상세
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.9)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span>원점수</span>
+                    <span>{modalSchoolResult.results.testRawTotal} / 500</span>
+                  </div>
+                  {useWeights && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span>가중치 적용 후</span>
+                      <span>{modalSchoolResult.results.testWeightedTotal.toFixed(1)}</span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
