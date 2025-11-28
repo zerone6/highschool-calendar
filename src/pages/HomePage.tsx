@@ -1,88 +1,137 @@
 import React from 'react';
-import { ContentCard } from '../components/ContentCard';
+import { useNavigate } from 'react-router-dom';
 
 export const HomePage: React.FC = () => {
+  const navigate = useNavigate();
+
   return (
     <div style={{
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+      background: 'linear-gradient(to bottom right, #6366f1, #a855f7, #9333ea)',
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      padding: '2rem 1rem',
+      display: 'flex',
+      flexDirection: 'column',
     }}>
-      <div style={{
-        maxWidth: '1200px',
-        margin: '0 auto',
+      {/* Header */}
+      <header style={{
+        background: 'rgba(255, 255, 255, 0.1)',
+        backdropFilter: 'blur(10px)',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
+        padding: '16px 0',
       }}>
-        {/* Header */}
-        <header style={{
-          textAlign: 'center',
-          marginBottom: '3rem',
-          color: '#ffffff',
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
+          padding: '0 20px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
         }}>
           <h1 style={{
-            fontSize: '2.5rem',
-            fontWeight: 700,
-            margin: '0 0 0.5rem 0',
-            textShadow: '0 2px 4px rgba(0,0,0,0.1)',
-          }}>
-            家族情報共有サイト
-          </h1>
-          <p style={{
-            fontSize: '1.1rem',
+            color: 'white',
+            fontSize: '1.5rem',
+            fontWeight: 600,
             margin: 0,
-            opacity: 0.9,
           }}>
-            家族のための便利なツールを一箇所に
-          </p>
-        </header>
+            입시 정보
+          </h1>
+        </div>
+      </header>
 
-        {/* Content Cards Grid */}
+      {/* Main Content */}
+      <main style={{
+        flex: 1,
+        overflowY: 'auto',
+        padding: '32px 20px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}>
         <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-          gap: '1.5rem',
-          padding: '0 0.5rem',
+          maxWidth: '1200px',
+          width: '100%',
         }}>
-          <ContentCard
-            title="東京都私立学校入試日程選択"
-            description="東京都の私立学校の入試日程を確認し、受験校を選択・管理できます。"
-            icon="📚"
-            path="/school-schedule"
-            bgColor="#1976d2"
-          />
-
-          {/* 추가 카드는 여기에 계속 추가 */}
           <div style={{
-            background: 'rgba(255, 255, 255, 0.1)',
-            borderRadius: '12px',
-            padding: '1.5rem',
-            border: '2px dashed rgba(255, 255, 255, 0.3)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minHeight: '200px',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '24px',
+            maxWidth: '800px',
+            margin: '0 auto',
           }}>
-            <div style={{ textAlign: 'center', color: '#ffffff' }}>
-              <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>➕</div>
-              <p style={{ margin: 0, fontSize: '0.9rem', opacity: 0.8 }}>
-                新しいコンテンツを追加予定
-              </p>
+            {/* School Schedule Card */}
+            <div
+              onClick={() => navigate('/school-schedule')}
+              style={{
+                background: 'white',
+                borderRadius: '12px',
+                padding: '24px',
+                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '16px',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-4px)';
+                e.currentTarget.style.boxShadow = '0 8px 30px rgba(0, 0, 0, 0.2)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.15)';
+              }}
+            >
+              <div style={{
+                width: '64px',
+                height: '64px',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '2rem',
+                flexShrink: 0,
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              }}>
+                📚
+              </div>
+              <div style={{ flex: 1 }}>
+                <h2 style={{
+                  fontSize: '1.25rem',
+                  fontWeight: 600,
+                  color: '#1f2937',
+                  marginBottom: '4px',
+                }}>
+                  일시일정
+                </h2>
+                <p style={{
+                  fontSize: '0.875rem',
+                  color: '#6b7280',
+                  margin: 0,
+                }}>
+                  선택
+                </p>
+              </div>
             </div>
           </div>
         </div>
+      </main>
 
-        {/* Footer */}
-        <footer style={{
-          textAlign: 'center',
-          marginTop: '4rem',
-          color: '#ffffff',
-          opacity: 0.7,
-          fontSize: '0.85rem',
+      {/* Footer */}
+      <footer style={{
+        background: 'rgba(255, 255, 255, 0.1)',
+        backdropFilter: 'blur(10px)',
+        borderTop: '1px solid rgba(255, 255, 255, 0.2)',
+        padding: '20px',
+        textAlign: 'center',
+      }}>
+        <p style={{
+          color: 'rgba(255, 255, 255, 0.8)',
+          fontSize: '0.875rem',
+          margin: 0,
         }}>
-          <p style={{ margin: 0 }}>
-            © 2025 Family Information Hub
-          </p>
-        </footer>
-      </div>
+          &copy; 2024 Family Services. All rights reserved.
+        </p>
+      </footer>
     </div>
   );
 };
