@@ -44,6 +44,7 @@ interface AdditionalScores {
   essay: number;
   practical: number;
   bonus: number;
+  speaking: number;
 }
 
 export const PointCalculatorPage: React.FC = () => {
@@ -94,12 +95,15 @@ export const PointCalculatorPage: React.FC = () => {
   const [useEssay, setUseEssay] = useState(false);
   const [usePractical, setUsePractical] = useState(false);
   const [useBonus, setUseBonus] = useState(false);
+  const [useSpeaking, setUseSpeaking] = useState(false);
   const [additionalScores, setAdditionalScores] = useState<AdditionalScores>({
     interview: 0,
     essay: 0,
     practical: 0,
     bonus: 0,
+    speaking: 0,
   });
+  const [speakingGrade, setSpeakingGrade] = useState<'A' | 'B' | 'C' | 'D' | 'E' | 'F'>('A');
   const [interviewMax] = useState(100);
   const [essayMax] = useState(100);
   const [practicalMax] = useState(100);
@@ -127,6 +131,12 @@ export const PointCalculatorPage: React.FC = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [dropdownOpen]);
+
+  // 스피킹 등급을 점수로 변환
+  const getSpeakingScore = (grade: 'A' | 'B' | 'C' | 'D' | 'E' | 'F'): number => {
+    const scoreMap = { A: 20, B: 16, C: 12, D: 8, E: 4, F: 0 };
+    return scoreMap[grade];
+  };
 
   // 계산 로직
   const calculateResults = () => {
@@ -165,7 +175,8 @@ export const PointCalculatorPage: React.FC = () => {
       (useInterview ? additionalScores.interview : 0) +
       (useEssay ? additionalScores.essay : 0) +
       (usePractical ? additionalScores.practical : 0) +
-      (useBonus ? additionalScores.bonus : 0);
+      (useBonus ? additionalScores.bonus : 0) +
+      (useSpeaking ? additionalScores.speaking : 0);
 
     // 6. 최종 점수 계산
     let finalScore = 0;
@@ -892,6 +903,53 @@ export const PointCalculatorPage: React.FC = () => {
                       }}
                     />
                     <span style={{ fontSize: '0.875rem', color: '#6b7280' }}>/ {bonusMax}</span>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginBottom: '8px' }}>
+                  <input
+                    type="checkbox"
+                    checked={useSpeaking}
+                    onChange={(e) => {
+                      setUseSpeaking(e.target.checked);
+                      if (e.target.checked) {
+                        setAdditionalScores({ ...additionalScores, speaking: getSpeakingScore(speakingGrade) });
+                      } else {
+                        setAdditionalScores({ ...additionalScores, speaking: 0 });
+                      }
+                    }}
+                  />
+                  <span style={{ fontSize: '0.875rem', fontWeight: 500, color: '#374151' }}>영어 스피킹 테스트</span>
+                </label>
+                {useSpeaking && (
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginLeft: '28px' }}>
+                    <select
+                      value={speakingGrade}
+                      onChange={(e) => {
+                        const grade = e.target.value as 'A' | 'B' | 'C' | 'D' | 'E' | 'F';
+                        setSpeakingGrade(grade);
+                        setAdditionalScores({ ...additionalScores, speaking: getSpeakingScore(grade) });
+                      }}
+                      style={{
+                        padding: '6px 12px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        fontSize: '0.875rem',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <option value="A">A (20점)</option>
+                      <option value="B">B (16점)</option>
+                      <option value="C">C (12점)</option>
+                      <option value="D">D (8점)</option>
+                      <option value="E">E (4점)</option>
+                      <option value="F">F (0점)</option>
+                    </select>
+                    <span style={{ fontSize: '0.875rem', color: '#6b7280', fontWeight: 600 }}>
+                      {getSpeakingScore(speakingGrade)}점
+                    </span>
                   </div>
                 )}
               </div>
