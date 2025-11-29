@@ -16,10 +16,11 @@ export const SchoolSelectionStep: React.FC<SchoolSelectionStepProps> = ({
   const [availableSchools, setAvailableSchools] = useState<School[]>([]);
   const [isNewSchool, setIsNewSchool] = useState(true);
   const [selectedExistingSchoolId, setSelectedExistingSchoolId] = useState<number | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
 
   // 현재 입력 중인 학교 데이터
   const [schoolName, setSchoolName] = useState('');
-  const [patternType, setPatternType] = useState<'simple' | 'ratio'>('simple');
+  const [patternType, setPatternType] = useState<'simple' | 'ratio'>('ratio');
   const [ratioTest, setRatioTest] = useState(7);
   const [ratioNaishin, setRatioNaishin] = useState(3);
   const [passRate80, setPassRate80] = useState('');
@@ -28,19 +29,36 @@ export const SchoolSelectionStep: React.FC<SchoolSelectionStepProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 저장된 학교 목록 불러오기
+  // 사용자 정보 및 학교 목록 불러오기
   useEffect(() => {
-    loadSchools();
+    loadUserAndSchools();
   }, []);
 
-  const loadSchools = async () => {
+  const loadUserAndSchools = async () => {
     try {
+      // 사용자 정보 가져오기
+      const userResponse = await fetch('/auth/status', { credentials: 'include' });
+      const userData = await userResponse.json();
+      if (userData.authenticated && userData.user) {
+        setCurrentUserId(userData.user.userId);
+      }
+
+      // 학교 목록 가져오기
       const schools = await getSchools();
       setAvailableSchools(schools);
     } catch (err) {
-      console.error('Failed to load schools:', err);
-      setError('학교 목록을 불러오는데 실패했습니다.');
+      console.error('Failed to load data:', err);
+      setError('데이터를 불러오는데 실패했습니다.');
     }
+  };
+
+  // 선택한 학교를 현재 사용자가 수정 가능한지 체크
+  const canEditSelectedSchool = (): boolean => {
+    if (isNewSchool) return true;
+    if (!selectedExistingSchoolId) return false;
+
+    const school = availableSchools.find((s) => s.id === selectedExistingSchoolId);
+    return school ? school.created_by === currentUserId : false;
   };
 
   // 기존 학교 선택 시 데이터 자동 입력
@@ -60,7 +78,7 @@ export const SchoolSelectionStep: React.FC<SchoolSelectionStepProps> = ({
   // 폼 초기화
   const resetForm = () => {
     setSchoolName('');
-    setPatternType('simple');
+    setPatternType('ratio');
     setRatioTest(7);
     setRatioNaishin(3);
     setPassRate80('');
@@ -288,6 +306,23 @@ export const SchoolSelectionStep: React.FC<SchoolSelectionStepProps> = ({
             </div>
           )}
 
+          {/* 수정 권한 경고 메시지 */}
+          {!isNewSchool && selectedExistingSchoolId && !canEditSelectedSchool() && (
+            <div
+              style={{
+                padding: '12px',
+                background: '#fef3c7',
+                border: '1px solid #fcd34d',
+                borderRadius: '8px',
+                marginBottom: '8px',
+              }}
+            >
+              <p style={{ margin: 0, fontSize: '0.875rem', color: '#92400e' }}>
+                ℹ️ 이 학교는 다른 사용자가 생성했습니다. 정보를 수정할 수 없으며, 선택만 가능합니다.
+              </p>
+            </div>
+          )}
+
           {/* 학교 이름 */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
             <div>
@@ -299,7 +334,7 @@ export const SchoolSelectionStep: React.FC<SchoolSelectionStepProps> = ({
                 value={schoolName}
                 onChange={(e) => setSchoolName(e.target.value)}
                 placeholder="예: 都立日比谷高校"
-                disabled={!isNewSchool && !selectedExistingSchoolId}
+                disabled={!canEditSelectedSchool()}
                 style={{
                   width: '100%',
                   padding: '8px 12px',
@@ -307,6 +342,8 @@ export const SchoolSelectionStep: React.FC<SchoolSelectionStepProps> = ({
                   borderRadius: '8px',
                   fontSize: '0.875rem',
                   boxSizing: 'border-box',
+                  backgroundColor: !canEditSelectedSchool() ? '#f3f4f6' : 'white',
+                  cursor: !canEditSelectedSchool() ? 'not-allowed' : 'text',
                 }}
               />
             </div>
@@ -321,7 +358,7 @@ export const SchoolSelectionStep: React.FC<SchoolSelectionStepProps> = ({
                 onChange={(e) => setPassRate80(e.target.value)}
                 placeholder="예: 850"
                 step="0.1"
-                disabled={!isNewSchool && !selectedExistingSchoolId}
+                disabled={!canEditSelectedSchool()}
                 style={{
                   width: '100%',
                   padding: '8px 12px',
@@ -329,6 +366,8 @@ export const SchoolSelectionStep: React.FC<SchoolSelectionStepProps> = ({
                   borderRadius: '8px',
                   fontSize: '0.875rem',
                   boxSizing: 'border-box',
+                  backgroundColor: !canEditSelectedSchool() ? '#f3f4f6' : 'white',
+                  cursor: !canEditSelectedSchool() ? 'not-allowed' : 'text',
                 }}
               />
             </div>
@@ -343,7 +382,7 @@ export const SchoolSelectionStep: React.FC<SchoolSelectionStepProps> = ({
                 onChange={(e) => setPassRate60(e.target.value)}
                 placeholder="예: 800"
                 step="0.1"
-                disabled={!isNewSchool && !selectedExistingSchoolId}
+                disabled={!canEditSelectedSchool()}
                 style={{
                   width: '100%',
                   padding: '8px 12px',
@@ -351,6 +390,8 @@ export const SchoolSelectionStep: React.FC<SchoolSelectionStepProps> = ({
                   borderRadius: '8px',
                   fontSize: '0.875rem',
                   boxSizing: 'border-box',
+                  backgroundColor: !canEditSelectedSchool() ? '#f3f4f6' : 'white',
+                  cursor: !canEditSelectedSchool() ? 'not-allowed' : 'text',
                 }}
               />
             </div>
@@ -362,21 +403,21 @@ export const SchoolSelectionStep: React.FC<SchoolSelectionStepProps> = ({
               계산 패턴
             </label>
             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: canEditSelectedSchool() ? 'pointer' : 'not-allowed', opacity: canEditSelectedSchool() ? 1 : 0.6 }}>
                 <input
                   type="radio"
                   checked={patternType === 'simple'}
                   onChange={() => setPatternType('simple')}
-                  disabled={!isNewSchool && !selectedExistingSchoolId}
+                  disabled={!canEditSelectedSchool()}
                 />
                 <span style={{ fontSize: '0.875rem' }}>단순형 (내신 195점 + 시험 500점)</span>
               </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: canEditSelectedSchool() ? 'pointer' : 'not-allowed', opacity: canEditSelectedSchool() ? 1 : 0.6 }}>
                 <input
                   type="radio"
                   checked={patternType === 'ratio'}
                   onChange={() => setPatternType('ratio')}
-                  disabled={!isNewSchool && !selectedExistingSchoolId}
+                  disabled={!canEditSelectedSchool()}
                 />
                 <span style={{ fontSize: '0.875rem' }}>비율형 (시험:내신 비율)</span>
               </label>
@@ -396,7 +437,7 @@ export const SchoolSelectionStep: React.FC<SchoolSelectionStepProps> = ({
                   onChange={(e) => setRatioTest(Number(e.target.value))}
                   min={1}
                   max={10}
-                  disabled={!isNewSchool && !selectedExistingSchoolId}
+                  disabled={!canEditSelectedSchool()}
                   style={{
                     width: '100%',
                     padding: '8px 12px',
@@ -404,6 +445,8 @@ export const SchoolSelectionStep: React.FC<SchoolSelectionStepProps> = ({
                     borderRadius: '8px',
                     fontSize: '0.875rem',
                     boxSizing: 'border-box',
+                    backgroundColor: !canEditSelectedSchool() ? '#f3f4f6' : 'white',
+                    cursor: !canEditSelectedSchool() ? 'not-allowed' : 'text',
                   }}
                 />
               </div>
@@ -418,7 +461,7 @@ export const SchoolSelectionStep: React.FC<SchoolSelectionStepProps> = ({
                   onChange={(e) => setRatioNaishin(Number(e.target.value))}
                   min={1}
                   max={10}
-                  disabled={!isNewSchool && !selectedExistingSchoolId}
+                  disabled={!canEditSelectedSchool()}
                   style={{
                     width: '100%',
                     padding: '8px 12px',
@@ -426,6 +469,8 @@ export const SchoolSelectionStep: React.FC<SchoolSelectionStepProps> = ({
                     borderRadius: '8px',
                     fontSize: '0.875rem',
                     boxSizing: 'border-box',
+                    backgroundColor: !canEditSelectedSchool() ? '#f3f4f6' : 'white',
+                    cursor: !canEditSelectedSchool() ? 'not-allowed' : 'text',
                   }}
                 />
               </div>
