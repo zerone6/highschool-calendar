@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { HomePage } from './pages/HomePage';
 import { SchoolSchedulePage } from './pages/SchoolSchedulePage';
 import { PointCalculatorPageNew } from './pages/PointCalculatorPageNew';
+import { SchoolManagementPage } from './pages/SchoolManagementPage';
 
 export const App: React.FC = () => {
   return (
@@ -11,6 +12,7 @@ export const App: React.FC = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/school-schedule" element={<SchoolSchedulePage />} />
         <Route path="/point-calculator" element={<PointCalculatorPageNew />} />
+        <Route path="/school-management" element={<SchoolManagementPage />} />
       </Routes>
     </BrowserRouter>
   );

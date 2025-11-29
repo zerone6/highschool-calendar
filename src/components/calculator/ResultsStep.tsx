@@ -117,12 +117,12 @@ export const ResultsStep: React.FC<ResultsStepProps> = ({
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       {/* 개요 섹션 */}
       {overviewResult && (
-        <div style={{ background: 'white', borderRadius: '12px', padding: '24px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)' }}>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: '#1f2937', marginTop: 0, marginBottom: '20px' }}>
+        <div style={{ background: 'white', borderRadius: '12px', padding: '12px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)' }}>
+          <h2 style={{ fontSize: '1rem', fontWeight: 600, color: '#1f2937', marginTop: 0, marginBottom: '10px' }}>
             개요
           </h2>
 
-          <div style={{ display: 'flex', gap: '20px', marginBottom: '24px' }}>
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '12px' }}>
             {/* 최종 점수 - 클릭 가능 */}
             <div
               onClick={() => {
@@ -135,7 +135,7 @@ export const ResultsStep: React.FC<ResultsStepProps> = ({
                 flex: 1,
                 background: '#f3f4f6',
                 borderRadius: '8px',
-                padding: '16px',
+                padding: '8px',
                 cursor: 'pointer',
                 transition: 'all 0.2s',
                 border: '2px solid transparent',
@@ -149,28 +149,28 @@ export const ResultsStep: React.FC<ResultsStepProps> = ({
                 e.currentTarget.style.borderColor = 'transparent';
               }}
             >
-              <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '8px' }}>최종 점수 (클릭하여 상세보기)</div>
-              <div style={{ fontSize: '2rem', fontWeight: 700, color: '#1f2937' }}>
+              <div style={{ fontSize: '0.75rem', color: '#6b7280', marginBottom: '4px' }}>최종 점수 (클릭하여 상세보기)</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1f2937' }}>
                 {overviewResult.finalScore.toFixed(1)}
               </div>
             </div>
 
             {/* 학력고사 원점수 */}
-            <div style={{ flex: 1, background: '#f3f4f6', borderRadius: '8px', padding: '16px' }}>
-              <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '8px' }}>학력고사 원점수</div>
-              <div style={{ fontSize: '2rem', fontWeight: 700, color: '#1f2937' }}>
-                {adjustedTestRawTotal} <span style={{ fontSize: '1rem', fontWeight: 400, color: '#6b7280' }}>/ 500</span>
+            <div style={{ flex: 1, background: '#f3f4f6', borderRadius: '8px', padding: '8px' }}>
+              <div style={{ fontSize: '0.75rem', color: '#6b7280', marginBottom: '4px' }}>학력고사 원점수</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1f2937' }}>
+                {adjustedTestRawTotal} <span style={{ fontSize: '0.875rem', fontWeight: 400, color: '#6b7280' }}>/ 500</span>
               </div>
             </div>
           </div>
 
           {/* 원점수 슬라이드바 */}
-          <div style={{ background: '#f9fafb', borderRadius: '8px', padding: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-              <div style={{ fontSize: '0.875rem', fontWeight: 600, color: '#374151' }}>
+          <div style={{ background: '#f9fafb', borderRadius: '8px', padding: '10px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+              <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#374151' }}>
                 학력고사 원점수 조정
               </div>
-              <span style={{ fontSize: '1.125rem', fontWeight: 600, color: '#3b82f6' }}>
+              <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#3b82f6' }}>
                 {adjustedTestRawTotal}점
               </span>
             </div>
@@ -182,7 +182,7 @@ export const ResultsStep: React.FC<ResultsStepProps> = ({
               onChange={(e) => setAdjustedTestRawTotal(Number(e.target.value))}
               style={{
                 width: '100%',
-                height: '8px',
+                height: '6px',
                 borderRadius: '4px',
                 background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${(adjustedTestRawTotal / 500) * 100}%, #e5e7eb ${(adjustedTestRawTotal / 500) * 100}%, #e5e7eb 100%)`,
                 outline: 'none',
@@ -190,11 +190,11 @@ export const ResultsStep: React.FC<ResultsStepProps> = ({
                 cursor: 'pointer',
               }}
             />
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px', fontSize: '0.75rem', color: '#6b7280' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px', fontSize: '0.625rem', color: '#6b7280' }}>
               <span>0</span>
               <span>500</span>
             </div>
-            <div style={{ marginTop: '12px', fontSize: '0.75rem', color: '#6b7280', textAlign: 'center' }}>
+            <div style={{ marginTop: '6px', fontSize: '0.625rem', color: '#6b7280', textAlign: 'center' }}>
               슬라이드바를 움직여 학력고사 점수를 조정하면 아래 합격권이 실시간으로 변경됩니다
             </div>
           </div>

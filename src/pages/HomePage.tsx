@@ -250,32 +250,60 @@ export const HomePage: React.FC = () => {
                   {/* Menu Items */}
                   <div style={{ padding: '8px 0' }}>
                     {user.role === 'admin' && (
-                      <button
-                        onClick={() => window.location.href = '/auth/admin'}
-                        style={{
-                          width: '100%',
-                          padding: '12px 20px',
-                          background: 'none',
-                          border: 'none',
-                          textAlign: 'left',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '12px',
-                          transition: 'background 0.2s',
-                          fontSize: '0.875rem',
-                          color: '#374151',
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.background = '#f3f4f6';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.background = 'none';
-                        }}
-                      >
-                        <span>👑</span>
-                        관리자 대시보드
-                      </button>
+                      <>
+                        <button
+                          onClick={() => window.location.href = '/auth/admin'}
+                          style={{
+                            width: '100%',
+                            padding: '12px 20px',
+                            background: 'none',
+                            border: 'none',
+                            textAlign: 'left',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                            transition: 'background 0.2s',
+                            fontSize: '0.875rem',
+                            color: '#374151',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = '#f3f4f6';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'none';
+                          }}
+                        >
+                          <span>👑</span>
+                          사용자 관리
+                        </button>
+                        <button
+                          onClick={() => navigate('/school-management')}
+                          style={{
+                            width: '100%',
+                            padding: '12px 20px',
+                            background: 'none',
+                            border: 'none',
+                            textAlign: 'left',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                            transition: 'background 0.2s',
+                            fontSize: '0.875rem',
+                            color: '#374151',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = '#f3f4f6';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'none';
+                          }}
+                        >
+                          <span>🏫</span>
+                          학교 관리
+                        </button>
+                      </>
                     )}
                     <button
                       onClick={handleLogout}
